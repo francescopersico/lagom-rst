@@ -19,14 +19,14 @@ public interface ClientCommand extends Jsonable {
 	@SuppressWarnings("serial")
 	@Immutable
 	@JsonDeserialize
-	final class CreateClient implements ClientCommand, CompressedJsonable, PersistentEntity.ReplyType<String> {
+	final class AddClient implements ClientCommand, CompressedJsonable, PersistentEntity.ReplyType<String> {
 
 
 		public final String externalId;
 		public final String email;
 		public final String sms;
 
-		public CreateClient(String externalId, String email, String sms) {
+		public AddClient(String externalId, String email, String sms) {
 			this.externalId = externalId;
 			this.email = email;
 			this.sms = sms;
@@ -36,7 +36,7 @@ public interface ClientCommand extends Jsonable {
 		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (o == null || getClass() != o.getClass()) return false;
-			CreateClient that = (CreateClient) o;
+			AddClient that = (AddClient) o;
 			return Objects.equal(externalId, that.externalId) &&
 					Objects.equal(email, that.email) &&
 					Objects.equal(sms, that.sms);

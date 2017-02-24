@@ -3,6 +3,8 @@ package cz.codingmonkey.ibs.user.impl;
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 import cz.codingmonkey.ibs.user.api.ClientService;
+import cz.codingmonkey.ibs.user.impl.data.MyDatabase;
+import cz.codingmonkey.ibs.user.impl.data.MyDatabaseImpl;
 import cz.codingmonkeys.cbs.api.CbsClientService;
 
 /**
@@ -12,6 +14,7 @@ public class ClientsModule extends AbstractModule implements ServiceGuiceSupport
 	@Override
 	protected void configure() {
 		bind(CbsClientService.class).to(DummyCbsGetClientService.class);
+		bind(MyDatabase.class).to(MyDatabaseImpl.class);
 
 		bindServices(
 				serviceBinding(ClientService.class, ClientServiceImpl.class)

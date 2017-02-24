@@ -7,43 +7,63 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
-import java.util.function.Function;
 
-import static cz.codingmonkey.ibs.user.impl.ClientCommand.*;
-import static cz.codingmonkey.ibs.user.impl.ClientCommand.CreateClient;
-import static cz.codingmonkey.ibs.user.impl.ClientEvent.*;
+import static cz.codingmonkey.ibs.user.impl.ClientCommand.AddClient;
+import static cz.codingmonkey.ibs.user.impl.ClientCommand.DeactivateClient;
+import static cz.codingmonkey.ibs.user.impl.ClientEvent.ClientCreated;
+import static cz.codingmonkey.ibs.user.impl.ClientEvent.ClientDeactivated;
 
 /**
  * @author rstefanca
  */
-public class ClientEntity extends PersistentEntity<ClientCommand, ClientEvent, Optional<Client>> {
+public class ClientEntity extends PersistentEntity<ClientCommand, ClientEvent, ClientState> {
 
 	private final Logger log = LoggerFactory.getLogger(ClientEntity.class);
 
 	@Override
-	public Behavior initialBehavior(Optional<Optional<Client>> snapshotState) {
-		Optional<Client> client = snapshotState.flatMap(Function.identity());
-
-		if (client.isPresent()) {
-			return activated(client.get());
-		} else {
+	public Behavior initialBehavior(Optional<ClientState> snapshotState) {
+		if (!snapshotState.isPresent()) {
 			return notCreated();
-		}
+		} else
+			return activated(snapshotState.get());
 	}
 
 	@SuppressWarnings("unchecked")
-	private Behavior activated(Client client) {
-		BehaviorBuilder b = newBehaviorBuilder(Optional.of(client));
+	private Behavior notCreated() {
+		BehaviorBuilder b = newBehaviorBuilder(ClientState.notCreated());
 
-		b.setCommandHandler(DeactivateClient.class, (cmd, ctx) -> {
-			log.info("Deactivating client: {}", client);
-			if (!client.active) {
-				throw new ClientStateException("Client already deactivated");
-			}
+		b.setCommandHandler(AddClient.class, this::createClientHandler);
+		b.setEventHandlerChangingBehavior(ClientCreated.class, evt -> activated(ClientState.active(evt.client)));
 
-			return ctx.thenPersist(new ClientDeactivated(entityId()), evt -> ctx.reply(Done.getInstance()));
-		});
-		b.setEventHandlerChangingBehavior(ClientDeactivated.class, evt -> deactivated(state().get()));
+		b.setReadOnlyCommandHandler(DeactivateClient.class, (cmd, ctx) ->
+				ctx.invalidCommand("Client does not exists. entityId: " + entityId())
+		);
+
+		return b.build();
+	}
+
+	@SuppressWarnings("unchecked")
+	private Behavior activated(ClientState clientState) {
+		BehaviorBuilder b = newBehaviorBuilder(clientState);
+
+		b.setCommandHandler(DeactivateClient.class, (cmd, ctx) ->
+				ctx.thenPersist(new ClientDeactivated(entityId()), evt -> ctx.reply(Done.getInstance())));
+
+		b.setEventHandlerChangingBehavior(ClientDeactivated.class, evt -> deactivated(state().deactivate()));
+
+		addReadOnlyCreateClientHandler(b);
+
+		return b.build();
+	}
+
+	@SuppressWarnings("unchecked")
+	private Behavior deactivated(ClientState clientState) {
+		BehaviorBuilder b = newBehaviorBuilder(clientState);
+
+		b.setCommandHandler(ClientCommand.ActivateClient.class, (cmd, ctx) ->
+				ctx.thenPersist(new ClientDeactivated(entityId()), evt -> ctx.reply(Done.getInstance()))
+		);
+		b.setEventHandlerChangingBehavior(ClientDeactivated.class, evt -> activated(state().activate()));
 
 		addReadOnlyCreateClientHandler(b);
 
@@ -51,45 +71,18 @@ public class ClientEntity extends PersistentEntity<ClientCommand, ClientEvent, O
 	}
 
 	private static void addReadOnlyCreateClientHandler(BehaviorBuilder b) {
-		b.setReadOnlyCommandHandler(CreateClient.class, (cmd, ctx) ->
+		b.setReadOnlyCommandHandler(AddClient.class, (cmd, ctx) ->
 				ctx.invalidCommand("Client already exists")
 		);
 	}
 
-	@SuppressWarnings("unchecked")
-	private Behavior deactivated(Client client) {
-		BehaviorBuilder b = newBehaviorBuilder(Optional.of(client));
-		addReadOnlyCreateClientHandler(b);
-		return b.build();
-	}
-
-	private Client deactivate(Optional<Client> state) {
-		Client client = state.get();
-		return new Client(client.externalId, client.email, client.sms, false);
-	}
 
 
 	@SuppressWarnings("unchecked")
-	private Behavior notCreated() {
-		BehaviorBuilder b = newBehaviorBuilder(Optional.empty());
-
-		b.setCommandHandler(CreateClient.class, this::createClientHandler);
-		b.setEventHandler(ClientCreated.class, evt -> Optional.of(evt.client));
-
-		b.setReadOnlyCommandHandler(DeactivateClient.class, (cmd, ctx) ->
-				ctx.invalidCommand("Client does not exists. entityId: " + entityId())
-		);
-
-		b.setEventHandlerChangingBehavior(ClientCreated.class, evt -> activated(evt.client));
-
-		return b.build();
-	}
-
-	@SuppressWarnings("unchecked")
-	private Persist createClientHandler(CreateClient cmd, CommandContext ctx) {
+	private Persist createClientHandler(AddClient cmd, CommandContext ctx) {
 		log.info("Creating user: {}", cmd);
 		Client client = new Client(cmd.externalId, cmd.email, cmd.sms, true);
 
-		return ctx.thenPersist(new ClientCreated(client), evt -> ctx.reply(entityId()));
+		return ctx.thenPersist(new ClientCreated(entityId(), client), evt -> ctx.reply(entityId()));
 	}
 }
