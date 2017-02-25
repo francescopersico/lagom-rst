@@ -1,6 +1,7 @@
 package cz.codingmonkey.ibs.user.impl.data;
 
-import cz.codingmonkey.ibs.user.impl.ClientEvent;
+import cz.codingmonkey.ibs.user.api.Client;
+import cz.codingmonkey.ibs.user.impl.domain.ClientEvent;
 import org.apache.commons.dbutils.QueryRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * @author rstefanca
@@ -37,8 +39,19 @@ public class MyDatabaseImpl implements MyDatabase {
 		log.info("{} rows updated", updated);
 	}
 
+
 	@Override
 	public void deactivateClient(Connection connection, ClientEvent.ClientDeactivated e) throws SQLException {
-
+		throw new UnsupportedOperationException("Not ready yet");
 	}
+
+	private static Client buildClient(Map<String, Object> row) {
+		return Client.builder()
+				.externalId((String) row.get("externalId"))
+				.sms((String) row.get("sms"))
+				.email((String) row.get("email"))
+				.active(true) //todo
+				.build();
+	}
+
 }

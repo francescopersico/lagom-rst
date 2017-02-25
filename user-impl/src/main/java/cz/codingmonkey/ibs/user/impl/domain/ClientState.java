@@ -1,4 +1,4 @@
-package cz.codingmonkey.ibs.user.impl;
+package cz.codingmonkey.ibs.user.impl.domain;
 
 import com.lightbend.lagom.serialization.CompressedJsonable;
 import cz.codingmonkey.ibs.user.api.Client;

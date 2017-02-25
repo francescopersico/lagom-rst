@@ -1,6 +1,6 @@
 package cz.codingmonkey.ibs.user.impl.data;
 
-import cz.codingmonkey.ibs.user.impl.ClientEvent;
+import cz.codingmonkey.ibs.user.impl.domain.ClientEvent;
 
 import java.sql.Connection;
 import java.sql.SQLException;

@@ -5,6 +5,8 @@ import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 import cz.codingmonkey.ibs.user.api.ClientService;
 import cz.codingmonkey.ibs.user.impl.data.MyDatabase;
 import cz.codingmonkey.ibs.user.impl.data.MyDatabaseImpl;
+import cz.codingmonkey.ibs.user.impl.data.ReadRepository;
+import cz.codingmonkey.ibs.user.impl.data.ReadRepositoryImpl;
 import cz.codingmonkeys.cbs.api.CbsClientService;
 
 /**
@@ -15,6 +17,7 @@ public class ClientsModule extends AbstractModule implements ServiceGuiceSupport
 	protected void configure() {
 		bind(CbsClientService.class).to(DummyCbsGetClientService.class);
 		bind(MyDatabase.class).to(MyDatabaseImpl.class);
+		bind(ReadRepository.class).to(ReadRepositoryImpl.class);
 
 		bindServices(
 				serviceBinding(ClientService.class, ClientServiceImpl.class)

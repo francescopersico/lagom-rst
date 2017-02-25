@@ -1,31 +1,26 @@
-package cz.codingmonkey.ibs.user.impl;
+package cz.codingmonkey.ibs.user.impl.domain;
 
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import cz.codingmonkey.ibs.user.api.Client;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 
-import static cz.codingmonkey.ibs.user.impl.ClientCommand.AddClient;
-import static cz.codingmonkey.ibs.user.impl.ClientCommand.DeactivateClient;
-import static cz.codingmonkey.ibs.user.impl.ClientEvent.ClientCreated;
-import static cz.codingmonkey.ibs.user.impl.ClientEvent.ClientDeactivated;
+import static cz.codingmonkey.ibs.user.impl.domain.ClientCommand.AddClient;
+import static cz.codingmonkey.ibs.user.impl.domain.ClientCommand.DeactivateClient;
+import static cz.codingmonkey.ibs.user.impl.domain.ClientEvent.ClientCreated;
+import static cz.codingmonkey.ibs.user.impl.domain.ClientEvent.ClientDeactivated;
 
 /**
  * @author rstefanca
  */
+@Slf4j
 public class ClientEntity extends PersistentEntity<ClientCommand, ClientEvent, ClientState> {
-
-	private final Logger log = LoggerFactory.getLogger(ClientEntity.class);
 
 	@Override
 	public Behavior initialBehavior(Optional<ClientState> snapshotState) {
-		if (!snapshotState.isPresent()) {
-			return notCreated();
-		} else
-			return activated(snapshotState.get());
+		return snapshotState.map(this::activated).orElseGet(this::notCreated);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -75,8 +70,6 @@ public class ClientEntity extends PersistentEntity<ClientCommand, ClientEvent, C
 				ctx.invalidCommand("Client already exists")
 		);
 	}
-
-
 
 	@SuppressWarnings("unchecked")
 	private Persist createClientHandler(AddClient cmd, CommandContext ctx) {

@@ -1,4 +1,4 @@
-package cz.codingmonkey.ibs.user.impl;
+package cz.codingmonkey.ibs.user.impl.domain;
 
 import akka.Done;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
