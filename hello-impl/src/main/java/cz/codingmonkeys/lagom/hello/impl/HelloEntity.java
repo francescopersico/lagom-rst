@@ -3,15 +3,14 @@
  */
 package cz.codingmonkeys.lagom.hello.impl;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
-
 import akka.Done;
+import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import cz.codingmonkeys.lagom.hello.impl.HelloCommand.Hello;
 import cz.codingmonkeys.lagom.hello.impl.HelloCommand.UseGreetingMessage;
 import cz.codingmonkeys.lagom.hello.impl.HelloEvent.GreetingMessageChanged;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * This is an event sourced entity. It has a state, {@link HelloState}, which

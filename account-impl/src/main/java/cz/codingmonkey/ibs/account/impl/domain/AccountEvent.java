@@ -32,4 +32,19 @@ public interface AccountEvent extends Jsonable, AggregateEvent<AccountEvent> {
 			this.iban = iban;
 		}
 	}
+
+	@Immutable
+	@JsonDeserialize
+	@EqualsAndHashCode
+	@ToString
+	final class MoneyTransferred implements AccountEvent {
+
+		public final String iban;
+		public final Movement movement;
+
+		public MoneyTransferred(String iban, Movement movement) {
+			this.iban = iban;
+			this.movement = movement;
+		}
+	}
 }

@@ -1,6 +1,5 @@
 package cz.codingmonkey.ibs.user.impl.domain;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
@@ -32,7 +31,6 @@ public interface ClientEvent extends Jsonable, AggregateEvent<ClientEvent> {
 		public final String id;
 		public final Client client;
 
-		@JsonCreator
 		public ClientCreated(String id, Client client) {
 			this.id = id;
 			this.client = client;

@@ -20,11 +20,9 @@ import javax.annotation.concurrent.Immutable;
 public class Account {
 
 	private final String iban;
-	private final float balance;
 
 	@JsonCreator
-	public Account(String iban, float balance) {
+	public Account(String iban) {
 		this.iban = iban;
-		this.balance = balance;
 	}
 }

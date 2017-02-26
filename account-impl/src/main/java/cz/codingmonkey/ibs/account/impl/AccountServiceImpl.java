@@ -20,7 +20,6 @@ import cz.codinmonkey.ibs.account.api.Account;
 import cz.codinmonkey.ibs.account.api.AccountService;
 import lombok.extern.slf4j.Slf4j;
 
-import java.math.BigDecimal;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -37,26 +36,26 @@ public class AccountServiceImpl implements AccountService {
 	@Inject
 	public AccountServiceImpl(PersistentEntityRegistry persistentEntityRegistry, ClientService clientService, CbsClientService cbsClientService, Materializer mat) {
 		this.persistentEntityRegistry = persistentEntityRegistry;
-		//this.clientService = clientService;
 		this.cbsClientService = cbsClientService;
 		this.mat = mat;
+		this.persistentEntityRegistry.register(AccountEntity.class);
+
+		//subscribe to client events
 		clientService.clientsTopic().subscribe().atLeastOnce(Flow.fromFunction(this::handleMessage));
 	}
 
+	@Override
+	public ServiceCall<NotUsed, Account> getAccount(String iban) {
+		return request -> CompletableFuture.completedFuture(new Account("IBN3242432424"));
+	}
+
 	private Done handleMessage(ClientMessage msg) {
-		log.info("Recieved client message");
+		log.info("Received client message");
 		if (msg instanceof ClientMessage.ClientCreated) {
 			log.info("Handling {}", msg);
 			cbsClientService.getCbsClient(msg.getExternalClientId()).thenCompose(this::createAccount);
 		}
 		return Done.getInstance();
-	}
-
-	@Override
-	public ServiceCall<NotUsed, Account> getAccount(String iban) {
-		return request -> {
-			return CompletableFuture.completedFuture(new Account("IBN3242432424", new BigDecimal("23.42").floatValue()));
-		};
 	}
 
 	private PersistentEntityRef<AccountCommand> entityRef(String entityId) {
@@ -66,11 +65,7 @@ public class AccountServiceImpl implements AccountService {
 	private CompletionStage<Done> createAccount(CbsClient cbsClient) {
 		return Source.from(cbsClient.getAccounts()).mapAsyncUnordered(4, acc -> {
 			log.info("Adding account {}", acc.getIban());
-			//PersistentEntityRef<AccountCommand> ref = entityRef(acc.getIban());
-			//return ref.ask(new AccountCommand.AddAccount(acc.getIban()));
-
-			//todo
-			return CompletableFuture.completedFuture(Done.getInstance());
+			return entityRef(acc.getIban()).ask(new AccountCommand.AddAccount(acc.getIban()));
 		}).runWith(Sink.ignore(), mat).toCompletableFuture();
 	}
 }

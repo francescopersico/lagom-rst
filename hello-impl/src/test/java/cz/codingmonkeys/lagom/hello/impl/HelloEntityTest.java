@@ -1,23 +1,21 @@
 package cz.codingmonkeys.lagom.hello.impl;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Collections;
-import java.util.Optional;
-
+import akka.Done;
+import akka.actor.ActorSystem;
+import akka.testkit.JavaTestKit;
+import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
+import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver.Outcome;
+import cz.codingmonkeys.lagom.hello.impl.HelloCommand.Hello;
+import cz.codingmonkeys.lagom.hello.impl.HelloCommand.UseGreetingMessage;
+import cz.codingmonkeys.lagom.hello.impl.HelloEvent.GreetingMessageChanged;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
-import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver.Outcome;
+import java.util.Collections;
+import java.util.Optional;
 
-import akka.Done;
-import akka.actor.ActorSystem;
-import akka.testkit.JavaTestKit;
-import cz.codingmonkeys.lagom.hello.impl.HelloCommand.Hello;
-import cz.codingmonkeys.lagom.hello.impl.HelloCommand.UseGreetingMessage;
-import cz.codingmonkeys.lagom.hello.impl.HelloEvent.GreetingMessageChanged;
+import static org.junit.Assert.assertEquals;
 
 public class HelloEntityTest {
 

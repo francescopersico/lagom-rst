@@ -1,12 +1,12 @@
 package cz.codingmonkeys.lagom.hello.api;
 
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @JsonDeserialize

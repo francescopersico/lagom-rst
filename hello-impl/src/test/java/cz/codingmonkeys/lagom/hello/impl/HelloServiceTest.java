@@ -3,16 +3,14 @@
  */
 package cz.codingmonkeys.lagom.hello.impl;
 
+import cz.codingmonkeys.lagom.hello.api.GreetingMessage;
+import cz.codingmonkeys.lagom.hello.api.HelloService;
+import org.junit.Test;
+
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.defaultSetup;
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.withServer;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
-import akka.NotUsed;
-import cz.codingmonkeys.lagom.hello.api.GreetingMessage;
-import cz.codingmonkeys.lagom.hello.api.HelloService;
 
 public class HelloServiceTest {
 
