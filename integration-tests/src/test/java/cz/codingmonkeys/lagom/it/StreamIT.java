@@ -1,27 +1,23 @@
 package cz.codingmonkeys.lagom.it;
 
 import akka.actor.ActorSystem;
-import akka.japi.Effect;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.client.integration.LagomClientFactory;
+import cz.codingmonkey.lagom.stream.api.StreamService;
+import cz.codingmonkeys.lagom.hello.api.GreetingMessage;
+import cz.codingmonkeys.lagom.hello.api.HelloService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import cz.codingmonkeys.lagom.stream.api.StreamService;
-import cz.codingmonkeys.lagom.hello.api.GreetingMessage;
-import cz.codingmonkeys.lagom.hello.api.HelloService;
 
-import java.io.File;
 import java.net.URI;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 

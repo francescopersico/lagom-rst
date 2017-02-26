@@ -2,19 +2,24 @@ package cz.codingmonkey.ibs.user.impl;
 
 import akka.Done;
 import akka.NotUsed;
+import akka.japi.Pair;
 import com.google.inject.Inject;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
+import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.api.transport.PolicyViolation;
+import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.lightbend.lagom.javadsl.persistence.ReadSide;
 import cz.codingmonkey.ibs.user.api.Client;
+import cz.codingmonkey.ibs.user.api.ClientMessage;
 import cz.codingmonkey.ibs.user.api.ClientService;
 import cz.codingmonkey.ibs.user.api.CreateClient;
 import cz.codingmonkey.ibs.user.impl.data.ReadRepository;
 import cz.codingmonkey.ibs.user.impl.domain.ClientCommand;
 import cz.codingmonkey.ibs.user.impl.domain.ClientEntity;
+import cz.codingmonkey.ibs.user.impl.domain.ClientEvent;
 import cz.codingmonkeys.cbs.api.CbsClientService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +81,7 @@ public class ClientServiceImpl implements ClientService {
 		};
 	}
 
+
 	@Override
 	public ServiceCall<NotUsed, Client> getClient(String id) {
 		return request ->
@@ -87,6 +93,22 @@ public class ClientServiceImpl implements ClientService {
 								throw new NotFound("Client not found");
 							}
 						});
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public Topic<ClientMessage> clientsTopic() {
+		return TopicProducer.singleStreamWithOffset(offset -> {
+			return persistentEntityRegistry
+					.eventStream(ClientEvent.CLIENT_EVENT_TAG, offset)
+					.filter(pair -> pair.first() instanceof ClientEvent.ClientCreated)
+					.map(pair -> {
+						ClientEvent.ClientCreated event = (ClientEvent.ClientCreated) pair.first();
+						ClientMessage message = new ClientMessage.ClientCreated(event.id, event.client.email, event.client.sms);
+						log.info("Publishing {}", message);
+						return Pair.create(message, pair.second());
+					});
+		});
 	}
 
 	private PersistentEntityRef<ClientCommand> entityRef(String entityId) {

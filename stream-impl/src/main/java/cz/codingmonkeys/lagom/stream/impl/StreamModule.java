@@ -5,8 +5,8 @@ package cz.codingmonkeys.lagom.stream.impl;
 
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
+import cz.codingmonkey.lagom.stream.api.StreamService;
 import cz.codingmonkeys.lagom.hello.api.HelloService;
-import cz.codingmonkeys.lagom.stream.api.StreamService;
 
 /**
  * The module that binds the StreamService so that it can be served.

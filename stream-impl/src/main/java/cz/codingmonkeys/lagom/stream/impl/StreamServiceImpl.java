@@ -6,8 +6,8 @@ package cz.codingmonkeys.lagom.stream.impl;
 import akka.NotUsed;
 import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
+import cz.codingmonkey.lagom.stream.api.StreamService;
 import cz.codingmonkeys.lagom.hello.api.HelloService;
-import cz.codingmonkeys.lagom.stream.api.StreamService;
 
 import javax.inject.Inject;
 

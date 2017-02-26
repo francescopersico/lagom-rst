@@ -6,6 +6,7 @@ import com.lightbend.lagom.javadsl.api.CircuitBreaker;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
+import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
@@ -14,6 +15,8 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
  * @author rstefanca
  */
 public interface ClientService extends Service {
+
+	String GREETINGS_TOPIC = "clients";
 
 	ServiceCall<CreateClient, String> createClient();
 
@@ -28,8 +31,13 @@ public interface ClientService extends Service {
 				pathCall("/api/clients", this::createClient),
 				pathCall("/api/clients/:id", this::getClient),
 				restCall(Method.PUT, "/api/clients/:id/deactivate", this::deactivateClient)
-		).withAutoAcl(true).withCircuitBreaker(CircuitBreaker.perNode());
+		)
+				.withAutoAcl(true)
+				.withCircuitBreaker(CircuitBreaker.perNode())
+				.publishing(topic(GREETINGS_TOPIC, this::clientsTopic));
 
 	}
+
+	Topic<ClientMessage> clientsTopic();
 
 }
