@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.ReadSideProcessor;
 import com.lightbend.lagom.javadsl.persistence.jdbc.JdbcReadSide;
-import cz.codingmonkey.ibs.user.impl.data.MyDatabase;
+import cz.codingmonkey.ibs.user.impl.data.ClientsDatabase;
 import cz.codingmonkey.ibs.user.impl.domain.ClientEvent;
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
@@ -14,13 +14,13 @@ import org.pcollections.TreePVector;
  */
 public class ClientEventProcessor extends ReadSideProcessor<ClientEvent> {
 
-	private final MyDatabase myDatabase;
+	private final ClientsDatabase clientsDatabase;
 
 	private final JdbcReadSide jdbcReadSide;
 
 	@Inject
-	public ClientEventProcessor(MyDatabase myDatabase, JdbcReadSide jdbcReadSide) {
-		this.myDatabase = myDatabase;
+	public ClientEventProcessor(ClientsDatabase clientsDatabase, JdbcReadSide jdbcReadSide) {
+		this.clientsDatabase = clientsDatabase;
 		this.jdbcReadSide = jdbcReadSide;
 	}
 
@@ -30,9 +30,9 @@ public class ClientEventProcessor extends ReadSideProcessor<ClientEvent> {
 		JdbcReadSide.ReadSideHandlerBuilder<ClientEvent> builder = jdbcReadSide
 				.builder("clientoffset");
 
-		builder.setGlobalPrepare(myDatabase::createTables);
-		builder.setEventHandler(ClientEvent.ClientCreated.class, myDatabase::createClient);
-		builder.setEventHandler(ClientEvent.ClientDeactivated.class, myDatabase::deactivateClient);
+		builder.setGlobalPrepare(clientsDatabase::createTables);
+		builder.setEventHandler(ClientEvent.ClientCreated.class, clientsDatabase::createClient);
+		builder.setEventHandler(ClientEvent.ClientDeactivated.class, clientsDatabase::deactivateClient);
 
 		return builder.build();
 	}

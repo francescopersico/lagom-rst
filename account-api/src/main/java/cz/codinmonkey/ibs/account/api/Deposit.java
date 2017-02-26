@@ -20,14 +20,14 @@ import java.math.BigDecimal;
 @EqualsAndHashCode
 @Builder
 @Getter
-public class Account {
+public class Deposit {
 
-	private final String iban;
-	private final BigDecimal balance;
+	private final String otherIban;
+	private final BigDecimal amount;
 
 	@JsonCreator
-	public Account(String iban, BigDecimal balance) {
-		this.iban = iban;
-		this.balance = balance;
+	public Deposit(String otherIban, BigDecimal amount) {
+		this.otherIban = otherIban;
+		this.amount = amount;
 	}
 }

@@ -8,7 +8,7 @@ import java.sql.SQLException;
 /**
  * @author rstefanca
  */
-public interface MyDatabase {
+public interface ClientsDatabase {
 
 	void createTables(Connection connection) throws SQLException;
 

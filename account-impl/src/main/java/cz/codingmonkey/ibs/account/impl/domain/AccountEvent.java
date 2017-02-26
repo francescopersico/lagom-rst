@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.serialization.Jsonable;
+import cz.codinmonkey.ibs.account.api.Movement;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -27,9 +28,11 @@ public interface AccountEvent extends Jsonable, AggregateEvent<AccountEvent> {
 	@ToString
 	class AccountAdded implements AccountEvent {
 		public final String iban;
+		public final String clientId;
 
-		public AccountAdded(String iban) {
+		public AccountAdded(String iban, String clientId) {
 			this.iban = iban;
+			this.clientId = clientId;
 		}
 	}
 
@@ -39,10 +42,12 @@ public interface AccountEvent extends Jsonable, AggregateEvent<AccountEvent> {
 	@ToString
 	final class MoneyTransferred implements AccountEvent {
 
+		public final String paymentId;
 		public final String iban;
 		public final Movement movement;
 
-		public MoneyTransferred(String iban, Movement movement) {
+		public MoneyTransferred(String paymentId, String iban, Movement movement) {
+			this.paymentId = paymentId;
 			this.iban = iban;
 			this.movement = movement;
 		}

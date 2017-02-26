@@ -14,9 +14,9 @@ import java.util.Map;
 /**
  * @author rstefanca
  */
-public class MyDatabaseImpl implements MyDatabase {
+public class ClientsDatabaseImpl implements ClientsDatabase {
 
-	private final Logger log = LoggerFactory.getLogger(MyDatabaseImpl.class);
+	private final Logger log = LoggerFactory.getLogger(ClientsDatabaseImpl.class);
 	private final QueryRunner queryRunner = new QueryRunner();
 
 	@Override

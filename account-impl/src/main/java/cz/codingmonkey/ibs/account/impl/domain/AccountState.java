@@ -2,14 +2,12 @@ package cz.codingmonkey.ibs.account.impl.domain;
 
 import com.lightbend.lagom.serialization.Jsonable;
 import cz.codinmonkey.ibs.account.api.Account;
-import org.apache.commons.lang3.Validate;
-import org.pcollections.PSequence;
-import org.pcollections.TreePVector;
+import cz.codinmonkey.ibs.account.api.Movement;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static java.math.BigDecimal.*;
+import static java.math.BigDecimal.ZERO;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -19,32 +17,33 @@ public class AccountState implements Jsonable {
 
 	private final Optional<Account> account;
 
-	private final BigDecimal balance;
 
-	public AccountState(Optional<Account> account, BigDecimal balance) {
+	public AccountState(Optional<Account> account) {
 		this.account = account;
-		this.balance = balance;
 	}
 
 	public static AccountState notCreated() {
-		return new AccountState(Optional.empty(), ZERO);
+		return new AccountState(Optional.empty());
 	}
 
 	public static AccountState create(Account account) {
-		return new AccountState(Optional.of(account), ZERO);
+		return new AccountState(Optional.of(account));
 	}
 
-	public BigDecimal getBalance() {
-		return balance;
-	}
 
 	public AccountState addMovement(Movement movement) {
 		requireNonNull(movement);
-		BigDecimal newBalance = balance.add(movement.getAmount());
+		Account account = this.account.orElseThrow(IllegalStateException::new);
+
+		BigDecimal newBalance = account.getBalance().add(movement.getAmount());
 		if (newBalance.compareTo(ZERO) < 0) {
 			throw new RuntimeException("Overdrawn!"); //todo typed exception
 		}
 
-		return new AccountState(account, newBalance);
+		return new AccountState(Optional.of(new Account(account.getIban(), newBalance)));
+	}
+
+	public Optional<Account> getAccount() {
+		return account;
 	}
 }
