@@ -17,7 +17,6 @@ public class AccountState implements Jsonable {
 
 	private final Optional<Account> account;
 
-
 	public AccountState(Optional<Account> account) {
 		this.account = account;
 	}
@@ -40,7 +39,7 @@ public class AccountState implements Jsonable {
 			throw new RuntimeException("Overdrawn!"); //todo typed exception
 		}
 
-		return new AccountState(Optional.of(new Account(account.getIban(), newBalance)));
+		return new AccountState(Optional.of(account.withBalance(newBalance)));
 	}
 
 	public Optional<Account> getAccount() {

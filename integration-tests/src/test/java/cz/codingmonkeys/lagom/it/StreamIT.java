@@ -1,27 +1,9 @@
 package cz.codingmonkeys.lagom.it;
 
-import akka.actor.ActorSystem;
-import akka.stream.ActorMaterializer;
-import akka.stream.Materializer;
-import akka.stream.javadsl.Sink;
-import akka.stream.javadsl.Source;
-import com.lightbend.lagom.javadsl.client.integration.LagomClientFactory;
-import cz.codingmonkey.lagom.stream.api.StreamService;
-import cz.codingmonkeys.lagom.hello.api.GreetingMessage;
-import cz.codingmonkeys.lagom.hello.api.HelloService;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
 
 public class StreamIT {
+	/*
 
     private static final String SERVICE_LOCATOR_URI = "http://localhost:8000";
 
@@ -77,7 +59,7 @@ public class StreamIT {
         }
     }
 
-
+*/
 
 
 }

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.Wither;
 
 import javax.annotation.concurrent.Immutable;
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ import java.math.BigDecimal;
 @EqualsAndHashCode
 @Builder
 @Getter
+@Wither
 public class Account {
 
 	private final String iban;

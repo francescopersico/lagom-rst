@@ -20,13 +20,13 @@ import java.math.BigDecimal;
 @EqualsAndHashCode
 @Builder
 @Getter
-public class Deposit {
+public class Payment {
 
 	private final String otherIban;
 	private final BigDecimal amount;
 
 	@JsonCreator
-	public Deposit(String otherIban, BigDecimal amount) {
+	public Payment(String otherIban, BigDecimal amount) {
 		this.otherIban = otherIban;
 		this.amount = amount;
 	}

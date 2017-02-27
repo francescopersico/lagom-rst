@@ -34,7 +34,7 @@ public class AccountsDatabaseImpl implements AccountsDatabase {
 
 	@Override
 	public void createAccount(Connection connection, AccountEvent.AccountAdded evt) throws SQLException {
-		log.info("handling db create account");
+		log.info("handling db create account: {}", evt.iban);
 		int updated = queryRunner.update(
 				connection,
 				"INSERT INTO accounts(iban, name, clientId) values (?,?,?)",
@@ -45,7 +45,7 @@ public class AccountsDatabaseImpl implements AccountsDatabase {
 
 	@Override
 	public void addMovement(Connection connection, AccountEvent.MoneyTransferred evt) throws SQLException {
-		log.info("handling db movement: {}", evt.paymentId);
+		log.info("handling db movement - id:{}, iban: {} ", evt.paymentId, evt.iban);
 
 		int updated = queryRunner.update(
 				connection,

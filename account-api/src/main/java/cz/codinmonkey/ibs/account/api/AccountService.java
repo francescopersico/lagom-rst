@@ -24,12 +24,14 @@ public interface AccountService extends Service {
 	/**
 	 * curl http://localhost:9000/api/accounts/32424234242424/movements
 	 */
-	ServiceCall<NotUsed, PSequence<Movement>> getMovements(String iban);
+	ServiceCall<NotUsed, PSequence<PaymentInfo>> getMovements(String iban);
 
 	/**
 	 * curl -X POST -d '{"otherIban": "2342342423424242","amount": 1000.50}' "http://localhost:9000/api/accounts/iban2-3605796003289369500/deposit"
 	 */
-	ServiceCall<Deposit, Done> deposit(String iban);
+	ServiceCall<Payment, Done> deposit(String iban);
+
+	ServiceCall<Payment, Done> withdraw(String iban);
 
 	@Override
 	default Descriptor descriptor() {
@@ -37,8 +39,8 @@ public interface AccountService extends Service {
 		return named("accounts").withCalls(
 				pathCall("/api/accounts/:iban", this::getAccount),
 				pathCall("/api/accounts/:iban/movements", this::getMovements),
-				pathCall("/api/accounts/:iban/deposit", this::deposit)
-
+				pathCall("/api/accounts/:iban/deposit", this::deposit),
+				pathCall("/api/accounts/:iban/withdraw", this::withdraw)
 		)
 				.withAutoAcl(true)
 				.withCircuitBreaker(CircuitBreaker.perNode());

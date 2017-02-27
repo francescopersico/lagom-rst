@@ -11,18 +11,17 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.lightbend.lagom.javadsl.persistence.ReadSide;
+import cz.codingmonkey.ibs.account.impl.data.AccountReadOnlyRepository;
 import cz.codingmonkey.ibs.account.impl.domain.AccountCommand;
 import cz.codingmonkey.ibs.account.impl.domain.AccountEntity;
 import cz.codingmonkey.ibs.user.api.ClientMessage;
 import cz.codingmonkey.ibs.user.api.ClientService;
 import cz.codingmonkeys.cbs.api.CbsClient;
 import cz.codingmonkeys.cbs.api.CbsClientService;
-import cz.codinmonkey.ibs.account.api.Account;
-import cz.codinmonkey.ibs.account.api.AccountService;
-import cz.codinmonkey.ibs.account.api.Deposit;
-import cz.codinmonkey.ibs.account.api.Movement;
+import cz.codinmonkey.ibs.account.api.*;
 import lombok.extern.slf4j.Slf4j;
 import org.pcollections.PSequence;
+import org.pcollections.TreePVector;
 
 import java.util.concurrent.CompletionStage;
 
@@ -35,12 +34,14 @@ public class AccountServiceImpl implements AccountService {
 	private final PersistentEntityRegistry persistentEntityRegistry;
 	private final CbsClientService cbsClientService;
 	private final Materializer mat;
+	private final AccountReadOnlyRepository repo;
 
 	@Inject
-	public AccountServiceImpl(PersistentEntityRegistry persistentEntityRegistry, ClientService clientService, CbsClientService cbsClientService, Materializer mat, ReadSide readSide) {
+	public AccountServiceImpl(PersistentEntityRegistry persistentEntityRegistry, ClientService clientService, CbsClientService cbsClientService, Materializer mat, ReadSide readSide, AccountReadOnlyRepository repo) {
 		this.persistentEntityRegistry = persistentEntityRegistry;
 		this.cbsClientService = cbsClientService;
 		this.mat = mat;
+		this.repo = repo;
 		this.persistentEntityRegistry.register(AccountEntity.class);
 
 		readSide.register(AccountEventProcessor.class);
@@ -55,14 +56,20 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public ServiceCall<NotUsed, PSequence<Movement>> getMovements(String iban) {
-		return null;
+	public ServiceCall<NotUsed, PSequence<PaymentInfo>> getMovements(String iban) {
+		return request -> repo.getPaymentsByIban(iban);
 	}
 
 	@Override
-	public ServiceCall<Deposit, Done> deposit(String iban) {
+	public ServiceCall<Payment, Done> deposit(String iban) {
 		return request ->
 				entityRef(iban).ask(new AccountCommand.Deposit(request.getOtherIban(), request.getAmount()));
+	}
+
+	@Override
+	public ServiceCall<Payment, Done> withdraw(String iban) {
+		return request ->
+				entityRef(iban).ask(new AccountCommand.Withdraw(request.getOtherIban(), request.getAmount()));
 	}
 
 	private Done handleMessage(ClientMessage msg) {
