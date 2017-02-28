@@ -48,4 +48,16 @@ public interface ClientEvent extends Jsonable, AggregateEvent<ClientEvent> {
 			this.id = id;
 		}
 	}
+
+	@Immutable
+	@JsonDeserialize
+	@EqualsAndHashCode
+	@ToString
+	final class ClientActivated implements ClientEvent {
+		public final String id;
+
+		public ClientActivated(String id) {
+			this.id = id;
+		}
+	}
 }

@@ -25,6 +25,7 @@ public class DummyCbsGetClientService implements CbsClientService {
 						externalClientId,
 						"sms",
 						"email",
+						false,
 						of(new CbsAccount("iban1-" + Math.abs(random.nextLong())),
 								new CbsAccount("iban2-" + Math.abs(random.nextLong())))));
 	}

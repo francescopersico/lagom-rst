@@ -1,12 +1,14 @@
 package cz.codingmonkey.ibs.user.impl.domain;
 
 import akka.Done;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.lightbend.lagom.serialization.CompressedJsonable;
 import com.lightbend.lagom.serialization.Jsonable;
+import cz.codingmonkey.ibs.user.api.Client;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -19,42 +21,21 @@ public interface ClientCommand extends Jsonable {
 	@SuppressWarnings("serial")
 	@Immutable
 	@JsonDeserialize
+	@ToString
+	@EqualsAndHashCode
 	final class AddClient implements ClientCommand, CompressedJsonable, PersistentEntity.ReplyType<String> {
-
 
 		public final String externalId;
 		public final String email;
 		public final String sms;
+		public final boolean vip;
 
-		public AddClient(String externalId, String email, String sms) {
+		@JsonCreator
+		public AddClient(String externalId, String email, String sms, boolean vip) {
 			this.externalId = externalId;
 			this.email = email;
 			this.sms = sms;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-			AddClient that = (AddClient) o;
-			return Objects.equal(externalId, that.externalId) &&
-					Objects.equal(email, that.email) &&
-					Objects.equal(sms, that.sms);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hashCode(externalId, email, sms);
-		}
-
-		@Override
-		public String toString() {
-			return MoreObjects.toStringHelper(this)
-
-					.add("externalId", externalId)
-					.add("email", email)
-					.add("sms", sms)
-					.toString();
+			this.vip = vip;
 		}
 	}
 
@@ -67,6 +48,8 @@ public interface ClientCommand extends Jsonable {
 		INSTANCE
 	}
 
-
+	enum GetInfo implements ClientCommand, PersistentEntity.ReplyType<Client> {
+		INSTANCE
+	}
 
 }

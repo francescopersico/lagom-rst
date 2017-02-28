@@ -6,7 +6,6 @@ import akka.japi.Pair;
 import com.google.inject.Inject;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
-import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.api.transport.PolicyViolation;
 import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
@@ -27,8 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
-import static cz.codingmonkey.ibs.user.impl.domain.ClientCommand.AddClient;
-import static cz.codingmonkey.ibs.user.impl.domain.ClientCommand.DeactivateClient;
+import static cz.codingmonkey.ibs.user.impl.domain.ClientCommand.*;
 
 /**
  * @author rstefanca
@@ -68,7 +66,8 @@ public class ClientServiceImpl implements ClientService {
 						return ref.ask(new AddClient(
 								cbsClient.getExternalClientId(),
 								cbsClient.getEmail(),
-								cbsClient.getSms()));
+								cbsClient.getSms(),
+								cbsClient.isVip()));
 					});
 				});
 	}
@@ -84,15 +83,10 @@ public class ClientServiceImpl implements ClientService {
 
 	@Override
 	public ServiceCall<NotUsed, Client> getClient(String id) {
-		return request ->
-				repository.getClient(id)
-						.thenApply(maybeClient -> {
-							if (maybeClient.isPresent()) {
-								return maybeClient.get();
-							} else {
-								throw new NotFound("Client not found");
-							}
-						});
+		return request -> {
+			log.info("Getting client info: {}", id);
+			return entityRef(id).ask(GetInfo.INSTANCE);
+		};
 	}
 
 	@Override

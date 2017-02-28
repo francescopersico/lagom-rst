@@ -23,7 +23,7 @@ public class ClientsDatabaseImpl implements ClientsDatabase {
 	public void createTables(Connection connection) throws SQLException {
 		log.info("creating tables");
 		try (PreparedStatement ps = connection.prepareStatement("CREATE TABLE IF NOT EXISTS clients ( " +
-				"id VARCHAR(64), externalId VARCHAR(256), sms VARCHAR(15), email VARCHAR(255), PRIMARY KEY (id))")) {
+				"id VARCHAR(64), externalId VARCHAR(256), sms VARCHAR(15), email VARCHAR(255), vip BOOLEAN, PRIMARY KEY (id))")) {
 			ps.execute();
 		}
 	}
@@ -33,8 +33,8 @@ public class ClientsDatabaseImpl implements ClientsDatabase {
 		log.info("handling db create client");
 		int updated = queryRunner.update(
 				connection,
-				"INSERT INTO CLIENTS(id, externalId, sms, email) values (?,?,?,?)",
-				e.id, e.client.externalId, e.client.sms, e.client.email);
+				"INSERT INTO CLIENTS(id, externalId, sms, email, vip) values (?,?,?,?,?)",
+				e.id, e.client.externalId, e.client.sms, e.client.email, e.client.vip);
 
 		log.info("{} rows updated", updated);
 	}
@@ -50,6 +50,7 @@ public class ClientsDatabaseImpl implements ClientsDatabase {
 				.externalId((String) row.get("externalId"))
 				.sms((String) row.get("sms"))
 				.email((String) row.get("email"))
+				.vip((Boolean) row.get("vip"))
 				.active(true) //todo
 				.build();
 	}

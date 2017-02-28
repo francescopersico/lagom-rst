@@ -1,14 +1,15 @@
 package cz.codingmonkey.ibs.user.impl.domain;
 
 import akka.Done;
+import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import cz.codingmonkey.ibs.user.api.Client;
+import cz.codingmonkey.ibs.user.impl.domain.ClientEvent.ClientActivated;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 
-import static cz.codingmonkey.ibs.user.impl.domain.ClientCommand.AddClient;
-import static cz.codingmonkey.ibs.user.impl.domain.ClientCommand.DeactivateClient;
+import static cz.codingmonkey.ibs.user.impl.domain.ClientCommand.*;
 import static cz.codingmonkey.ibs.user.impl.domain.ClientEvent.ClientCreated;
 import static cz.codingmonkey.ibs.user.impl.domain.ClientEvent.ClientDeactivated;
 
@@ -16,6 +17,7 @@ import static cz.codingmonkey.ibs.user.impl.domain.ClientEvent.ClientDeactivated
  * @author rstefanca
  */
 @Slf4j
+@SuppressWarnings("unchecked")
 public class ClientEntity extends PersistentEntity<ClientCommand, ClientEvent, ClientState> {
 
 	@Override
@@ -30,8 +32,14 @@ public class ClientEntity extends PersistentEntity<ClientCommand, ClientEvent, C
 		b.setCommandHandler(AddClient.class, this::createClientHandler);
 		b.setEventHandlerChangingBehavior(ClientCreated.class, evt -> activated(ClientState.active(evt.client)));
 
-		b.setReadOnlyCommandHandler(DeactivateClient.class, (cmd, ctx) ->
-				ctx.invalidCommand("Client does not exists. entityId: " + entityId())
+		b.setReadOnlyCommandHandler(DeactivateClient.class, (cmd, ctx) -> {
+					throw new NotFound("Client with id " + entityId() + " not found");
+				}
+		);
+
+		b.setReadOnlyCommandHandler(GetInfo.class, (cmd, ctx) -> {
+					throw new NotFound("Client with id " + entityId() + " not found");
+				}
 		);
 
 		return b.build();
@@ -41,40 +49,54 @@ public class ClientEntity extends PersistentEntity<ClientCommand, ClientEvent, C
 	private Behavior activated(ClientState clientState) {
 		BehaviorBuilder b = newBehaviorBuilder(clientState);
 
+		setDeactivateBehavior(b);
+
+		addReadOnlyCreateClientHandler(b);
+
+		return b.build();
+	}
+
+	private Behavior deactivated(ClientState clientState) {
+		BehaviorBuilder b = newBehaviorBuilder(clientState);
+
+		setActivateBehavior(b);
+
+		addReadOnlyCreateClientHandler(b);
+
+		return b.build();
+	}
+
+	private void setActivateBehavior(BehaviorBuilder b) {
+		b.setCommandHandler(ActivateClient.class, (cmd, ctx) ->
+				ctx.thenPersist(new ClientDeactivated(entityId()), evt -> ctx.reply(Done.getInstance()))
+		);
+		b.setEventHandlerChangingBehavior(ClientActivated.class, evt -> activated(state().activate()));
+	}
+
+	private void setDeactivateBehavior(BehaviorBuilder b) {
 		b.setCommandHandler(DeactivateClient.class, (cmd, ctx) ->
 				ctx.thenPersist(new ClientDeactivated(entityId()), evt -> ctx.reply(Done.getInstance())));
 
 		b.setEventHandlerChangingBehavior(ClientDeactivated.class, evt -> deactivated(state().deactivate()));
-
-		addReadOnlyCreateClientHandler(b);
-
-		return b.build();
 	}
 
-	@SuppressWarnings("unchecked")
-	private Behavior deactivated(ClientState clientState) {
-		BehaviorBuilder b = newBehaviorBuilder(clientState);
-
-		b.setCommandHandler(ClientCommand.ActivateClient.class, (cmd, ctx) ->
-				ctx.thenPersist(new ClientDeactivated(entityId()), evt -> ctx.reply(Done.getInstance()))
-		);
-		b.setEventHandlerChangingBehavior(ClientDeactivated.class, evt -> activated(state().activate()));
-
-		addReadOnlyCreateClientHandler(b);
-
-		return b.build();
-	}
-
-	private static void addReadOnlyCreateClientHandler(BehaviorBuilder b) {
+	private void addReadOnlyCreateClientHandler(BehaviorBuilder b) {
 		b.setReadOnlyCommandHandler(AddClient.class, (cmd, ctx) ->
 				ctx.invalidCommand("Client already exists")
 		);
+
+		b.setReadOnlyCommandHandler(GetInfo.class, (cmd, ctx) -> ctx.reply(state().getClient().get()));
 	}
 
-	@SuppressWarnings("unchecked")
 	private Persist createClientHandler(AddClient cmd, CommandContext ctx) {
 		log.info("Creating user: {}", cmd);
-		Client client = new Client(cmd.externalId, cmd.email, cmd.sms, true);
+		Client client = Client.builder()
+				.externalId(cmd.externalId)
+				.email(cmd.email)
+				.sms(cmd.sms)
+				.vip(cmd.vip)
+				.active(true)
+				.build();
 
 		return ctx.thenPersist(new ClientCreated(entityId(), client), evt -> ctx.reply(entityId()));
 	}
