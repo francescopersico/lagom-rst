@@ -33,7 +33,7 @@ public class AccountEntity extends PersistentEntity<AccountCommand, AccountEvent
 			return ctx.thenPersist(new AccountEvent.AccountAdded(cmd.iban, cmd.clientId), evt -> ctx.reply(Done.getInstance()));
 		});
 
-		b.setEventHandlerChangingBehavior(AccountEvent.AccountAdded.class, evt -> created(AccountState.create(new Account(evt.iban, BigDecimal.ZERO))));
+		b.setEventHandlerChangingBehavior(AccountEvent.AccountAdded.class, evt -> created(AccountState.create(new Account(evt.clientId, evt.iban, BigDecimal.ZERO))));
 
 		return b.build();
 	}
@@ -44,34 +44,46 @@ public class AccountEntity extends PersistentEntity<AccountCommand, AccountEvent
 
 		b.setReadOnlyCommandHandler(AddAccount.class, (cmd, ctx) -> ctx.invalidCommand("Not Supported"));
 
-		b.setCommandHandler(Deposit.class, this::handleMovement);
-		b.setCommandHandler(Withdraw.class, this::handleMovement);
-
-		b.setEventHandler(MoneyTransferred.class, evt -> state().addMovement(evt.movement));
+		addMoneyMovementBehavior(b);
 
 		b.setReadOnlyCommandHandler(GetInfo.class, (cmd, ctx) -> ctx.reply(state().getAccount().get()));
 
 		return b.build();
 	}
 
+	private void addMoneyMovementBehavior(BehaviorBuilder b) {
+		b.setCommandHandler(Deposit.class, this::handleMovement);
+		b.setCommandHandler(Withdraw.class, this::handleMovement);
+		b.setCommandHandler(ChargeFee.class, this::handleMovement);
+
+		b.setEventHandler(MoneyTransferred.class, evt -> state().addMovement(evt.movement));
+	}
+
 	@SuppressWarnings("unchecked")
 	private Persist handleMovement(MovementCommand cmd, CommandContext ctx) {
 		Account account = state().getAccount().orElseThrow(IllegalStateException::new);
 		BigDecimal realAmount;
+		boolean feePayment = false;
 		if (cmd instanceof Withdraw) {
 			realAmount = cmd.getAmount().negate();
 		} else if (cmd instanceof Deposit) {
 			realAmount = cmd.getAmount();
+		} else if (cmd instanceof ChargeFee) {
+			realAmount = cmd.getAmount().negate();
+			feePayment = true;
 		} else {
 			throw new IllegalStateException("Unknown movement command " + cmd.getClass());
 		}
 
-		if (account.getBalance().add(realAmount).compareTo(BigDecimal.ZERO) < 0) {
-			throw new OverdrawException("Not enough money :(");
+		if (!feePayment) {
+			BigDecimal newAmount = account.getBalance().add(realAmount);
+			if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
+				throw new OverdrawException("Not enough money :(");
+			}
 		}
 
 		Movement movement = new Movement(cmd.getOtherIban(), realAmount, Instant.now());
 		log.info("Transfer on {}: {}", entityId(), movement);
-		return ctx.thenPersist(new MoneyTransferred(UUID.randomUUID().toString(), entityId(), movement), evt -> ctx.reply(Done.getInstance()));
+		return ctx.thenPersist(new MoneyTransferred(UUID.randomUUID().toString(), account.getClientId(), entityId(), movement), evt -> ctx.reply(Done.getInstance()));
 	}
 }

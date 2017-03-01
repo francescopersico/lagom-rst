@@ -69,6 +69,22 @@ public interface AccountCommand extends Jsonable {
 	@EqualsAndHashCode
 	@ToString
 	@Getter
+	class ChargeFee implements MovementCommand, CompressedJsonable {
+
+		private final String otherIban;
+		private final BigDecimal amount;
+
+		public ChargeFee(String otherIban, BigDecimal amount) {
+			this.otherIban = requireNonNull(otherIban, "otherIban must not be null");
+			this.amount = requireNonNull(amount, "amount must not be null");
+		}
+	}
+
+	@Immutable
+	@JsonDeserialize
+	@EqualsAndHashCode
+	@ToString
+	@Getter
 	class Deposit implements MovementCommand, CompressedJsonable {
 
 		private final String otherIban;

@@ -43,11 +43,14 @@ public interface AccountEvent extends Jsonable, AggregateEvent<AccountEvent> {
 	final class MoneyTransferred implements AccountEvent {
 
 		public final String paymentId;
+		public final String clientId;
 		public final String iban;
 		public final Movement movement;
 
-		public MoneyTransferred(String paymentId, String iban, Movement movement) {
+
+		public MoneyTransferred(String paymentId, String clientId, String iban, Movement movement) {
 			this.paymentId = paymentId;
+			this.clientId = clientId;
 			this.iban = iban;
 			this.movement = movement;
 		}

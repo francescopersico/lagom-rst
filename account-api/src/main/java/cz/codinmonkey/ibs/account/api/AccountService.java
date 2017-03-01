@@ -6,6 +6,7 @@ import com.lightbend.lagom.javadsl.api.CircuitBreaker;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
+import com.lightbend.lagom.javadsl.api.broker.Topic;
 import org.pcollections.PSequence;
 
 import static com.lightbend.lagom.javadsl.api.Service.named;
@@ -15,6 +16,8 @@ import static com.lightbend.lagom.javadsl.api.Service.pathCall;
  * @author rstefanca
  */
 public interface AccountService extends Service {
+
+	String ACCOUNTS_TOPIC = "accounts";
 
 	/**
 	 * curl http://localhost:9000/api/accounts/32424234242424
@@ -33,6 +36,10 @@ public interface AccountService extends Service {
 
 	ServiceCall<Payment, Done> withdraw(String iban);
 
+	ServiceCall<Fee, Done> chargeFee(String iban);
+
+	Topic<AccountMessage> accountsTopic();
+
 	@Override
 	default Descriptor descriptor() {
 
@@ -40,10 +47,12 @@ public interface AccountService extends Service {
 				pathCall("/api/accounts/:iban", this::getAccount),
 				pathCall("/api/accounts/:iban/movements", this::getMovements),
 				pathCall("/api/accounts/:iban/deposit", this::deposit),
-				pathCall("/api/accounts/:iban/withdraw", this::withdraw)
+				pathCall("/api/accounts/:iban/withdraw", this::withdraw),
+				pathCall("/api/accounts/:iban/chargeFee", this::chargeFee)
 		)
 				.withAutoAcl(true)
-				.withCircuitBreaker(CircuitBreaker.perNode());
+				.withCircuitBreaker(CircuitBreaker.perNode())
+				.publishing(Service.topic(ACCOUNTS_TOPIC, this::accountsTopic));
 
 	}
 }

@@ -14,6 +14,8 @@
         <module>cbs-api</module>
         <module>account-api</module>
         <module>account-impl</module>
+        <module>fee-api</module>
+        <module>fee-impl</module>
     </modules>
 
     <build>

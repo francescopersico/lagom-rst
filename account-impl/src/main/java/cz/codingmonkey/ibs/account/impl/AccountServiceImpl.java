@@ -2,18 +2,22 @@ package cz.codingmonkey.ibs.account.impl;
 
 import akka.Done;
 import akka.NotUsed;
+import akka.japi.Pair;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import com.google.inject.Inject;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
+import com.lightbend.lagom.javadsl.api.broker.Topic;
+import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.lightbend.lagom.javadsl.persistence.ReadSide;
 import cz.codingmonkey.ibs.account.impl.data.AccountReadOnlyRepository;
 import cz.codingmonkey.ibs.account.impl.domain.AccountCommand;
 import cz.codingmonkey.ibs.account.impl.domain.AccountEntity;
+import cz.codingmonkey.ibs.account.impl.domain.AccountEvent;
 import cz.codingmonkey.ibs.user.api.ClientMessage;
 import cz.codingmonkey.ibs.user.api.ClientService;
 import cz.codingmonkeys.cbs.api.CbsClient;
@@ -21,7 +25,6 @@ import cz.codingmonkeys.cbs.api.CbsClientService;
 import cz.codinmonkey.ibs.account.api.*;
 import lombok.extern.slf4j.Slf4j;
 import org.pcollections.PSequence;
-import org.pcollections.TreePVector;
 
 import java.util.concurrent.CompletionStage;
 
@@ -70,6 +73,35 @@ public class AccountServiceImpl implements AccountService {
 	public ServiceCall<Payment, Done> withdraw(String iban) {
 		return request ->
 				entityRef(iban).ask(new AccountCommand.Withdraw(request.getOtherIban(), request.getAmount()));
+	}
+
+	@Override
+	public ServiceCall<Fee, Done> chargeFee(String iban) {
+		return request -> {
+			log.info("Charging fee {} for {}", request, iban);
+			return entityRef(iban).ask(new AccountCommand.ChargeFee(request.getIban(), request.getAmount()));
+		};
+	}
+
+	@Override
+	public Topic<AccountMessage> accountsTopic() {
+		return TopicProducer.singleStreamWithOffset(offset -> {
+			return persistentEntityRegistry
+					.eventStream(AccountEvent.ACCOUNT_EVENT_TAG, offset)
+					.filter(pair -> pair.first() instanceof AccountEvent.MoneyTransferred)
+					.map(pair -> {
+						AccountEvent.MoneyTransferred event = (AccountEvent.MoneyTransferred) pair.first();
+						AccountMessage message = new AccountMessage.Movement(
+								event.iban,
+								event.movement.getOtherIban(),
+								event.clientId,
+								event.paymentId,
+								event.movement.getAmount()
+						);
+						log.info("Publishing {}", message);
+						return Pair.create(message, pair.second());
+					});
+		});
 	}
 
 	private Done handleMessage(ClientMessage msg) {

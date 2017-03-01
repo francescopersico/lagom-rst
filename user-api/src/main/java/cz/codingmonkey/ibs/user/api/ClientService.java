@@ -16,7 +16,7 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
  */
 public interface ClientService extends Service {
 
-	String GREETINGS_TOPIC = "clients";
+	String CLIENTS_TOPIC = "clients";
 
 	ServiceCall<CreateClient, String> createClient();
 
@@ -34,7 +34,7 @@ public interface ClientService extends Service {
 		)
 				.withAutoAcl(true)
 				.withCircuitBreaker(CircuitBreaker.perNode())
-				.publishing(topic(GREETINGS_TOPIC, this::clientsTopic));
+				.publishing(topic(CLIENTS_TOPIC, this::clientsTopic));
 
 	}
 

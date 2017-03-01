@@ -7,7 +7,6 @@ import cz.codinmonkey.ibs.account.api.Movement;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static java.math.BigDecimal.ZERO;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -35,9 +34,6 @@ public class AccountState implements Jsonable {
 		Account account = this.account.orElseThrow(IllegalStateException::new);
 
 		BigDecimal newBalance = account.getBalance().add(movement.getAmount());
-		if (newBalance.compareTo(ZERO) < 0) {
-			throw new RuntimeException("Overdrawn!"); //todo typed exception
-		}
 
 		return new AccountState(Optional.of(account.withBalance(newBalance)));
 	}

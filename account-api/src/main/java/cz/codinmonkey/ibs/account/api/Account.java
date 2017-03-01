@@ -24,11 +24,13 @@ import java.math.BigDecimal;
 @Wither
 public class Account {
 
+	private final String clientId;
 	private final String iban;
 	private final BigDecimal balance;
 
 	@JsonCreator
-	public Account(String iban, BigDecimal balance) {
+	public Account(String clientId, String iban, BigDecimal balance) {
+		this.clientId = clientId;
 		this.iban = iban;
 		this.balance = balance;
 	}
