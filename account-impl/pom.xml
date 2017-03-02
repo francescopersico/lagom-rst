@@ -25,7 +25,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>codingmonkeys</groupId>
             <artifactId>cbs-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -53,12 +53,6 @@
 
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
-            <artifactId>lagom-logback_2.11</artifactId>
-            <version>${lagom.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.lightbend.lagom</groupId>
             <artifactId>lagom-javadsl-persistence-jdbc_2.11</artifactId>
             <version>${lagom.version}</version>
         </dependency>
@@ -72,18 +66,13 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.4.192</version>
         </dependency>
 
         <dependency>
             <groupId>commons-dbutils</groupId>
             <artifactId>commons-dbutils</artifactId>
-            <version>1.6</version>
         </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.lightbend.lagom</groupId>
             <artifactId>lagom-javadsl-broker_2.11</artifactId>

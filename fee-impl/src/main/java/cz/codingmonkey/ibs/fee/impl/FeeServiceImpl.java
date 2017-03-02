@@ -48,7 +48,7 @@ public class FeeServiceImpl implements FeeService {
 			AccountMessage.Movement movement = (AccountMessage.Movement) msg;
 			String toIban = movement.getOtherIban();
 
-			if (!myIban.equals(toIban) && movement.getAmount().compareTo(BigDecimal.ZERO) < 0) { // withdraw only
+			if (!myIban.equals(toIban) && movement.getAmount().compareTo(BigDecimal.ZERO) < 0) { // don't charge yourself & withdraw only
 				BigDecimal amount = movement.getAmount().abs();
 				getRate(movement.getClientId())
 						.thenApply(rate -> Fee.builder()
@@ -72,6 +72,7 @@ public class FeeServiceImpl implements FeeService {
 				.thenApply(rate -> FeeInfo.builder().rate(rate).build());
 	}
 
+	//simple rate calculation
 	private CompletionStage<BigDecimal> getRate(String clientId) {
 		return clientService.getClient(clientId)
 				.invoke()

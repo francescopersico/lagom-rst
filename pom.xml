@@ -16,7 +16,19 @@
         <module>account-impl</module>
         <module>fee-api</module>
         <module>fee-impl</module>
+        <module>financial-transaction-api</module>
+        <module>financial-transaction-impl</module>
     </modules>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.14</version>
+        </dependency>
+
+    </dependencies>
 
     <build>
         <plugins>
@@ -96,9 +108,15 @@
             </dependency>
 
             <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.16.14</version>
+                <groupId>commons-dbutils</groupId>
+                <artifactId>commons-dbutils</artifactId>
+                <version>1.6</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>1.4.192</version>
             </dependency>
 
         </dependencies>
